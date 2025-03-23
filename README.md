@@ -42,5 +42,34 @@ gcloud builds submit --tag gcr.io/YOUR-PROJECT/icici-direct-mcp-server gcloud ru
 --platform managed
 --set-env-vars="ICICI_API_KEY=your_api_key_here"
 
+## Client sample 
+This Quick setup shows how MCP enables LLM to use ICICI directs breeze api.
+Type your financial data query or 'exit' to quit
+
+💬 Your query: Initialize my session with ICICI Direct
+
+🔍 Processing query: Initialize my session with ICICI Direct
+
+🤖 Sending query to LLM with MCP tools...
+
+🔧 LLM is calling tool: initialize_session
+   with parameters: {
+     "api_secret": "your_api_secret",
+     "session_token": "your_session_token"
+   }
+
+📊 Tool result: Session initialized successfully...
+
+🔹 LLM Response:
+I've initialized your session with ICICI Direct. Now you're ready to access financial data. 
+Would you like to see some market information? We can check current prices, view historical 
+data, or examine your portfolio.
+
+💬 Your query: Connect to WebSocket and show me the current price of HDFC Bank
+
+
+
+
+
 
 
