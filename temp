@@ -1,1 +1,8 @@
-hi
+1. Create DTOs ==>Build StandardPinRoutineRequest/Response classes matching CGCPINCB copybook structure with validation annotations.
+2. Create Enums ==> PinFunction ('G'/'S') and PinReturnStatus ('00'/'01'/'02'/'99') enums for COBOL 88-level equivalents.
+3. Create Service Class ==> with processStandardPinRoutine(), generatePins(), and scramblePins() methods.
+4. Create REST Controller ==> StandardPinRoutineController with POST endpoints for /process, /generate, /scramble operations.
+5. Create Validation Utils ==> to implement field validation methods for PIC clause formats and scramble key range checking.
+6. Create System Info Collector ==> to gather process/timing data equivalent to COBOL control blocks.
+7. Create Exception Handlers ==> custom exceptions and @ControllerAdvice for proper error handling and HTTP status mapping.
+8. Create Swagger Configuration ==> for OpenAPI documentation showing CGCPINCB field mappings.
