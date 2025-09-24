@@ -1,1 +1,464 @@
-kkk
+// Main Application Class
+package com.nicoservice;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class nicoGenerationServiceApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(nicoGenerationServiceApplication.class, args);
+    }
+}
+
+// DTO Classes for Request/Response
+package com.nicoservice.dto;
+
+public class nicoGenerationRequest {
+    private String functionType; // "GENERATE" or "SCRAMBLE"
+    private String executionMode; // "BATCH" or "INTERACTIVE"
+    private String jobNumber;
+    private String userId;
+    private String programName;
+    private String[] scrambleKey1;
+    private String[] scrambleKey2;
+    private String[] nicoOffset1;
+    private String[] nicoOffset2;
+    
+    // Constructors
+    public nicoGenerationRequest() {}
+    
+    public nicoGenerationRequest(String functionType, String executionMode) {
+        this.functionType = functionType;
+        this.executionMode = executionMode;
+    }
+    
+    // Getters and Setters
+    public String getFunctionType() { return functionType; }
+    public void setFunctionType(String functionType) { this.functionType = functionType; }
+    
+    public String getExecutionMode() { return executionMode; }
+    public void setExecutionMode(String executionMode) { this.executionMode = executionMode; }
+    
+    public String getJobNumber() { return jobNumber; }
+    public void setJobNumber(String jobNumber) { this.jobNumber = jobNumber; }
+    
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
+    
+    public String getProgramName() { return programName; }
+    public void setProgramName(String programName) { this.programName = programName; }
+    
+    public String[] getScrambleKey1() { return scrambleKey1; }
+    public void setScrambleKey1(String[] scrambleKey1) { this.scrambleKey1 = scrambleKey1; }
+    
+    public String[] getScrambleKey2() { return scrambleKey2; }
+    public void setScrambleKey2(String[] scrambleKey2) { this.scrambleKey2 = scrambleKey2; }
+    
+    public String[] getnicoOffset1() { return nicoOffset1; }
+    public void setnicoOffset1(String[] nicoOffset1) { this.nicoOffset1 = nicoOffset1; }
+    
+    public String[] getnicoOffset2() { return nicoOffset2; }
+    public void setnicoOffset2(String[] nicoOffset2) { this.nicoOffset2 = nicoOffset2; }
+}
+
+package com.nicoservice.dto;
+
+public class nicoGenerationResponse {
+    private boolean success;
+    private String errorMessage;
+    private String nico1;
+    private String nico2;
+    private String[] scrambledOffset1;
+    private String[] scrambledOffset2;
+    private SystemInfo systemInfo;
+    
+    // Constructors
+    public nicoGenerationResponse() {}
+    
+    public nicoGenerationResponse(boolean success) {
+        this.success = success;
+    }
+    
+    // Getters and Setters
+    public boolean isSuccess() { return success; }
+    public void setSuccess(boolean success) { this.success = success; }
+    
+    public String getErrorMessage() { return errorMessage; }
+    public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
+    
+    public String getnico1() { return nico1; }
+    public void setnico1(String nico1) { this.nico1 = nico1; }
+    
+    public String getnico2() { return nico2; }
+    public void setnico2(String nico2) { this.nico2 = nico2; }
+    
+    public String[] getScrambledOffset1() { return scrambledOffset1; }
+    public void setScrambledOffset1(String[] scrambledOffset1) { this.scrambledOffset1 = scrambledOffset1; }
+    
+    public String[] getScrambledOffset2() { return scrambledOffset2; }
+    public void setScrambledOffset2(String[] scrambledOffset2) { this.scrambledOffset2 = scrambledOffset2; }
+    
+    public SystemInfo getSystemInfo() { return systemInfo; }
+    public void setSystemInfo(SystemInfo systemInfo) { this.systemInfo = systemInfo; }
+    
+    public static class SystemInfo {
+        private String jobName;
+        private String procStep;
+        private String stepName;
+        private String programName;
+        private String jobNumber;
+        private String jobClass;
+        private String msgClass;
+        private String userId;
+        private String userName;
+        private String groupName;
+        private String programmerName;
+        private long microSeconds;
+        private boolean isBatch;
+        private boolean isCics;
+        
+        // Getters and Setters
+        public String getJobName() { return jobName; }
+        public void setJobName(String jobName) { this.jobName = jobName; }
+        
+        public String getProcStep() { return procStep; }
+        public void setProcStep(String procStep) { this.procStep = procStep; }
+        
+        public String getStepName() { return stepName; }
+        public void setStepName(String stepName) { this.stepName = stepName; }
+        
+        public String getProgramName() { return programName; }
+        public void setProgramName(String programName) { this.programName = programName; }
+        
+        public String getJobNumber() { return jobNumber; }
+        public void setJobNumber(String jobNumber) { this.jobNumber = jobNumber; }
+        
+        public String getJobClass() { return jobClass; }
+        public void setJobClass(String jobClass) { this.jobClass = jobClass; }
+        
+        public String getMsgClass() { return msgClass; }
+        public void setMsgClass(String msgClass) { this.msgClass = msgClass; }
+        
+        public String getUserId() { return userId; }
+        public void setUserId(String userId) { this.userId = userId; }
+        
+        public String getUserName() { return userName; }
+        public void setUserName(String userName) { this.userName = userName; }
+        
+        public String getGroupName() { return groupName; }
+        public void setGroupName(String groupName) { this.groupName = groupName; }
+        
+        public String getProgrammerName() { return programmerName; }
+        public void setProgrammerName(String programmerName) { this.programmerName = programmerName; }
+        
+        public long getMicroSeconds() { return microSeconds; }
+        public void setMicroSeconds(long microSeconds) { this.microSeconds = microSeconds; }
+        
+        public boolean isBatch() { return isBatch; }
+        public void setBatch(boolean batch) { isBatch = batch; }
+        
+        public boolean isCics() { return isCics; }
+        public void setCics(boolean cics) { isCics = cics; }
+    }
+}
+
+// Service Layer
+package com.nicoservice.service;
+
+import com.nicoservice.dto.nicoGenerationRequest;
+import com.nicoservice.dto.nicoGenerationResponse;
+import org.springframework.stereotype.Service;
+import java.security.SecureRandom;
+import java.time.Instant;
+import java.lang.management.ManagementFactory;
+import java.util.Random;
+
+@Service
+public class nicoGenerationService {
+    
+    private static boolean firstTime = true;
+    private static Random randomGenerator;
+    private static long seedValue;
+    
+    public nicoGenerationResponse processRequest(nicoGenerationRequest request) {
+        nicoGenerationResponse response = new nicoGenerationResponse();
+        
+        try {
+            // Set nico-OK flag equivalent
+            response.setSuccess(true);
+            
+            // Check function type
+            switch (request.getFunctionType().toUpperCase()) {
+                case "GENERATE":
+                case "GENERATE-nicoS":
+                    generatenicos(request, response);
+                    break;
+                case "SCRAMBLE":
+                case "SCRAMBLE-nicoS":
+                    scramblenicos(request, response);
+                    break;
+                default:
+                    response.setSuccess(false);
+                    response.setErrorMessage("Invalid function: nico-INVALID-FUNCTION");
+                    break;
+            }
+            
+        } catch (Exception e) {
+            response.setSuccess(false);
+            response.setErrorMessage("Processing error: " + e.getMessage());
+        }
+        
+        return response;
+    }
+    
+    private void generatenicos(nicoGenerationRequest request, nicoGenerationResponse response) {
+        // Collect system information (equivalent to ACCESS-SYSTEM-CONTROL-INFO)
+        nicoGenerationResponse.SystemInfo systemInfo = collectSystemInfo(request);
+        response.setSystemInfo(systemInfo);
+        
+        // Initialize random generator if first time
+        if (firstTime) {
+            initializeRandomGenerator(request, systemInfo);
+            firstTime = false;
+        }
+        
+        // Generate two random nicos
+        double nico1Random = randomGenerator.nextDouble();
+        double nico2Random = randomGenerator.nextDouble();
+        
+        // Convert to 4-digit nicos (equivalent to * 10000)
+        int nico1Value = (int) (nico1Random * 10000);
+        int nico2Value = (int) (nico2Random * 10000);
+        
+        // Format as 4-digit strings with leading zeros
+        response.setnico1(String.format("%04d", nico1Value));
+        response.setnico2(String.format("%04d", nico2Value));
+    }
+    
+    private void initializeRandomGenerator(nicoGenerationRequest request, nicoGenerationResponse.SystemInfo systemInfo) {
+        // Equivalent to setting PTR4 to address of CB1 and using FULL-WORD
+        long initialSeed = System.currentTimeMillis();
+        
+        // Determine execution mode and set seed accordingly
+        if ("BATCH".equalsIgnoreCase(request.getExecutionMode()) || systemInfo.isBatch()) {
+            // Use job number (4:5) equivalent
+            if (request.getJobNumber() != null && request.getJobNumber().length() >= 8) {
+                String jobSeed = request.getJobNumber().substring(3, 8); // positions 4-8 (0-based)
+                try {
+                    seedValue = Long.parseLong(jobSeed);
+                } catch (NumberFormatException e) {
+                    seedValue = jobSeed.hashCode();
+                }
+            } else {
+                seedValue = initialSeed;
+            }
+        } else {
+            // Use microseconds equivalent - get last 5 digits
+            long microSeconds = systemInfo.getMicroSeconds();
+            String microString = String.valueOf(microSeconds);
+            if (microString.length() >= 15) {
+                String microSeed = microString.substring(10, 15); // positions 11-15 (0-based)
+                try {
+                    seedValue = Long.parseLong(microSeed);
+                } catch (NumberFormatException e) {
+                    seedValue = microSeconds % 100000; // last 5 digits
+                }
+            } else {
+                seedValue = microSeconds % 100000;
+            }
+        }
+        
+        // Initialize random generator with seed
+        randomGenerator = new Random(seedValue);
+        
+        // Generate first random number with seed (equivalent to FUNCTION RANDOM (WS-SEED))
+        randomGenerator.nextDouble();
+    }
+    
+    private void scramblenicos(nicoGenerationRequest request, nicoGenerationResponse response) {
+        // Validate input arrays
+        if (request.getScrambleKey1() == null || request.getScrambleKey1().length != 8 ||
+            request.getScrambleKey2() == null || request.getScrambleKey2().length != 8 ||
+            request.getnicoOffset1() == null || request.getnicoOffset1().length != 8 ||
+            request.getnicoOffset2() == null || request.getnicoOffset2().length != 8) {
+            response.setSuccess(false);
+            response.setErrorMessage("Invalid scrambling arrays - must be 8 elements each");
+            return;
+        }
+        
+        // Initialize result arrays
+        String[] scrambledOffset1 = new String[8];
+        String[] scrambledOffset2 = new String[8];
+        
+        // First scrambling pass (equivalent to first PERFORM loop)
+        for (int ss1 = 0; ss1 < 8; ss1++) {  // SS1 from 1 to 8 (0-based in Java)
+            try {
+                // Get key character and convert to index (SS2)
+                String keyChar = request.getScrambleKey1()[ss1];
+                int ss2 = Integer.parseInt(keyChar) - 1; // Convert to 0-based index
+                
+                // Validate index range
+                if (ss2 >= 0 && ss2 < 8) {
+                    // Move PSS-nico-OFFSET-1(SS1:1) to PSR-nico-OFFSET-1(SS2:1)
+                    scrambledOffset1[ss2] = request.getnicoOffset1()[ss1];
+                }
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                response.setSuccess(false);
+                response.setErrorMessage("Invalid scramble key format in first pass at position " + (ss1 + 1));
+                return;
+            }
+        }
+        
+        // Second scrambling pass (equivalent to second PERFORM loop)
+        for (int ss1 = 0; ss1 < 8; ss1++) {  // SS1 from 1 to 8 (0-based in Java)
+            try {
+                // Get second key character and convert to index (SS2)
+                String keyChar = request.getScrambleKey2()[ss1];
+                int ss2 = Integer.parseInt(keyChar) - 1; // Convert to 0-based index
+                
+                // Validate index range
+                if (ss2 >= 0 && ss2 < 8) {
+                    // Move PSS-nico-OFFSET-2(SS1:1) to PSR-nico-OFFSET-2(SS2:1)
+                    scrambledOffset2[ss2] = request.getnicoOffset2()[ss1];
+                }
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                response.setSuccess(false);
+                response.setErrorMessage("Invalid scramble key format in second pass at position " + (ss1 + 1));
+                return;
+            }
+        }
+        
+        response.setScrambledOffset1(scrambledOffset1);
+        response.setScrambledOffset2(scrambledOffset2);
+    }
+    
+    private nicoGenerationResponse.SystemInfo collectSystemInfo(nicoGenerationRequest request) {
+        nicoGenerationResponse.SystemInfo systemInfo = new nicoGenerationResponse.SystemInfo();
+        
+        // Simulate system control block information gathering
+        // In a real Java environment, we collect equivalent system information
+        
+        // Job/Process information
+        systemInfo.setJobName(getProcessName());
+        systemInfo.setProcStep("JAVASTEP");
+        systemInfo.setStepName("nicoSVCS");
+        systemInfo.setProgramName(request.getProgramName() != null ? request.getProgramName() : "nicoSERVICE");
+        systemInfo.setJobNumber(generateJobNumber());
+        systemInfo.setJobClass("A");
+        systemInfo.setMsgClass("A");
+        
+        // User information
+        systemInfo.setUserId(request.getUserId() != null ? request.getUserId() : System.getProperty("user.name"));
+        systemInfo.setUserName(System.getProperty("user.name"));
+        systemInfo.setGroupName("USERS");
+        systemInfo.setProgrammerName("SYSTEM PROGRAMMER");
+        
+        // Timing information (equivalent to MICRO-SECONDS calculation)
+        long nanoTime = System.nanoTime();
+        long currentTime = System.currentTimeMillis();
+        // Simulate the COBOL calculation: MICRO-SECONDS = FULL-WORD * 1048576 + (FULL-WORD / 1024)
+        long simulatedMicroSeconds = (currentTime * 1048576L) + (nanoTime / 1024L);
+        systemInfo.setMicroSeconds(simulatedMicroSeconds);
+        
+        // Execution mode determination
+        String executionMode = request.getExecutionMode();
+        if ("BATCH".equalsIgnoreCase(executionMode)) {
+            systemInfo.setBatch(true);
+            systemInfo.setCics(false);
+        } else if ("CICS".equalsIgnoreCase(executionMode)) {
+            systemInfo.setBatch(false);
+            systemInfo.setCics(true);
+        } else {
+            // Default to interactive mode
+            systemInfo.setBatch(false);
+            systemInfo.setCics(false);
+        }
+        
+        return systemInfo;
+    }
+    
+    private String getProcessName() {
+        String jvmName = ManagementFactory.getRuntimeMXBean().getName();
+        return jvmName.substring(0, Math.min(8, jvmName.length())).toUpperCase();
+    }
+    
+    private String generateJobNumber() {
+        // Generate a job number similar to mainframe format
+        return "JOB" + String.format("%05d", (int)(System.currentTimeMillis() % 100000));
+    }
+}
+
+// REST Controller
+package com.nicoservice.controller;
+
+import com.nicoservice.dto.nicoGenerationRequest;
+import com.nicoservice.dto.nicoGenerationResponse;
+import com.nicoservice.service.nicoGenerationService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapnicog("/api/nico")
+@CrossOrigin(origins = "*")
+public class nicoController {
+    
+    @Autowired
+    private nicoGenerationService nicoGenerationService;
+    
+    @PostMapnicog("/generate")
+    public ResponseEntity<nicoGenerationResponse> generatenicos(@RequestBody nicoGenerationRequest request) {
+        // Set function type if not provided
+        if (request.getFunctionType() == null) {
+            request.setFunctionType("GENERATE");
+        }
+        
+        nicoGenerationResponse response = nicoGenerationService.processRequest(request);
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+    
+    @PostMapnicog("/scramble")
+    public ResponseEntity<nicoGenerationResponse> scramblenicos(@RequestBody nicoGenerationRequest request) {
+        // Set function type for scrambling
+        request.setFunctionType("SCRAMBLE");
+        
+        nicoGenerationResponse response = nicoGenerationService.processRequest(request);
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+    
+    @GetMapnicog("/health")
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.ok("nico Generation Service is running");
+    }
+}
+
+// Configuration Class
+package com.nicoservice.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+    
+    @Override
+    public void addCorsMapnicogs(CorsRegistry registry) {
+        registry.addMapnicog("/api/**")
+                .allowedOrigins("*")
+                .allowedMethods("GET", "POST", "PUT", "DELETE")
+                .allowedHeaders("*");
+    }
+}
