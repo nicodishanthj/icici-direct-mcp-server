@@ -1,0 +1,201 @@
+COBOL Subroutine to Spring Boot Parsing Instructions
+Step 1: Extract DTO Fields from LINKAGE SECTION Only
+a. Parse LINKAGE SECTION for Complete Interface
+INSTRUCTION: Scan LINKAGE SECTION for ALL data structures (input AND output)
+ Identify root group name → becomes main DTO class name
+ ALL fields in LINKAGE SECTION are interface fields (bidirectional)
+ Determine field direction based on PROCEDURE DIVISION usage:
+   Fields only referenced (READ) → input fields
+   Fields only modified (WRITE) → output fields  
+   Fields both referenced and modified → bidirectional fields
+ For each 05/07level group → create nested DTO class
+ For each elementary field with PIC clause → create DTO property
+ For each 88level condition → create enum value
+
+PARSING PATTERN:
+01 STANDARDPINROUTINEPARMS → StandardPinRoutineRequest/Response
+  05 PINFUNCTION PIC X → private PinFunction pinFunction (INPUT)
+  05 PINRETURNSTATUS PIC X(02) → private PinReturnStatus returnStatus (OUTPUT)
+  05 PGRPIN1 PIC 9(04) → private String pgrPin1 (OUTPUT)
+b. Classify Fields as Input vs Output
+INSTRUCTION: Analyze PROCEDURE DIVISION to determine field usage:
+ INPUT FIELDS: Referenced in IF conditions, EVALUATE, computations (righthand side)
+ OUTPUT FIELDS: Target of MOVE statements, COMPUTE results (lefthand side)
+ BIDIRECTIONAL: Used in both contexts
+
+FIELD CLASSIFICATION LOGIC:
+IF field appears in: "IF PINFUNCTION = 'G'" → INPUT
+IF field appears in: "MOVE '00' TO PINRETURNSTATUS" → OUTPUT
+IF field appears in: "MOVE PINVALUE TO PINFIELD, IF PINFIELD > 0" → BIDIRECTIONAL
+c. Create Request/Response DTO Structure
+INSTRUCTION: Split LINKAGE SECTION fields into two DTOs:
+
+REQUEST DTO (Input fields):
+ Fields used for decision making
+ Control flags and function codes
+ Input data for processing
+
+RESPONSE DTO (Output fields):  
+ Fields populated by subroutine processing
+ Return status and result codes
+ Generated or calculated values
+ Error information
+
+BIDIRECTIONAL DTO (Both input and output):
+ Include in both Request and Response DTOs
+ Handle properly in service method signature
+Step 2: Extract Service Method from PROCEDURE DIVISION
+a. Parse Main Entry Point
+INSTRUCTION: Identify main subroutine method:
+ PROCEDURE DIVISION USING clause → main method signature
+ ProgramID → service class name
+ Main processing flow → primary service method
+
+PARSING PATTERN:
+PROGRAMID. CGCXS540 → CGCXS540Service class
+PROCEDURE DIVISION USING STANDARDPINROUTINEPARMS → 
+  public StandardPinRoutineResponse processStandardPinRoutine(StandardPinRoutineRequest request)
+b. Extract Internal Methods from Paragraphs
+INSTRUCTION: Convert COBOL paragraphs to private methods:
+ Each paragraph/section → private method in service class
+ PERFORM calls → method calls
+ Parameters passed via shared LINKAGE data → method parameters
+ Local working storage → method variables
+
+METHOD EXTRACTION:
+CHECKFUNCTION. → private void checkFunction(StandardPinRoutineRequest request, StandardPinRoutineResponse response)
+PINGENERATIONROUTINE. → private void performPinGeneration(StandardPinRoutineRequest request, StandardPinRoutineResponse response)
+c. Handle Working Storage as Internal State
+INSTRUCTION: Working Storage becomes:
+ Private fields in service class (for persistent state)
+ Local variables in methods (for temporary calculations)
+ Static fields (for shared constants)
+ Method parameters (for intermediate values)
+
+WORKING STORAGE MAPPING:
+05 FIRSTTIME PIC X → private static boolean firstTime = true;
+05 WSSEED PIC 9(10) → private long seedValue;
+77 TEMPVALUE PIC 9(04) → local variable in method
+Step 3: Extract Method Signatures from LINKAGE Section Usage
+a. Main Service Method Signature
+INSTRUCTION: Create main method signature:
+ Method name from PROGRAMID
+ Input parameter from LINKAGE SECTION input fields → Request DTO
+ Return type from LINKAGE SECTION output fields → Response DTO
+ All LINKAGE fields accessible via request/response objects
+
+METHOD SIGNATURE:
+public StandardPinRoutineResponse processStandardPinRoutine(StandardPinRoutineRequest request)
+
+SUBROUTINE CHARACTERISTICS:
+ Single entry point method
+ All data exchange via LINKAGE SECTION (request/response DTOs)
+ No separate parameter passing
+ Return response object with all output fields populated
+b. Internal Method Signatures
+INSTRUCTION: Private methods use request/response references:
+ Pass request DTO for reading input fields
+ Pass response DTO for writing output fields  
+ Modify response object directly (pass by reference)
+ Return void or specific values for intermediate results
+
+INTERNAL METHOD SIGNATURES:
+private void performPinGeneration(StandardPinRoutineRequest request, StandardPinRoutineResponse response)
+private void validateInputParameters(StandardPinRoutineRequest request, StandardPinRoutineResponse response)
+private String calculateRandomSeed(ExecutionContext context)
+private void setErrorStatus(StandardPinRoutineResponse response, PinReturnStatus status)
+c. Handle LINKAGE Section Field Access
+INSTRUCTION: Field access patterns:
+ Input fields: Always read from request DTO
+ Output fields: Always write to response DTO
+ Status fields: Set in response DTO for error handling
+ Intermediate calculations: Use local variables or service instance fields
+
+FIELD ACCESS MAPPING:
+COBOL: IF PINFUNCTION = 'G'
+Java: if (request.getPinFunction() == PinFunction.GENERATE)
+
+COBOL: MOVE '00' TO PINRETURNSTATUS  
+Java: response.setReturnStatus(PinReturnStatus.PIN_OK)
+
+COBOL: MOVE RANDOMVALUE TO PGRPIN1
+Java: response.getGenerateReturnFields().setPgrPin1(randomPin)
+Step 4: Complete Subroutine Parsing Workflow
+a. SubroutineSpecific Analysis Sequence
+1. EXTRACT PROGRAMID → Service class name
+2. EXTRACT LINKAGE SECTION complete structure → Request/Response DTOs
+3. CLASSIFY LINKAGE fields → Input vs Output vs Bidirectional
+4. EXTRACT PROCEDURE DIVISION USING → Main method signature
+5. EXTRACT all paragraphs → Private service methods  
+6. ANALYZE field usage in each paragraph → Method implementations
+7. MAP WORKINGSTORAGE → Instance variables and local variables
+8. HANDLE error conditions → Exception handling or response status
+9. VALIDATE all LINKAGE fields covered → Complete interface mapping
+b. Subroutine Validation Checklist
+VERIFY subroutine conversion completeness:
+# All LINKAGE SECTION fields mapped to Request/Response DTOs
+# Field directionality correctly identified (input vs output)
+# Main PROCEDURE DIVISION USING becomes service method
+# All paragraphs converted to private methods
+# Working Storage properly handled as internal state
+# All field access goes through request/response objects
+# All MOVE operations to LINKAGE fields captured in response
+# All error handling sets appropriate response status
+# No external calls (pure subroutine logic)
+# Single entry/exit point maintained
+Step 5: SubroutineSpecific Output Templates
+a. Request/Response DTO Generation
+// Extract from LINKAGE SECTION only
+FOR EACH 01level group in LINKAGE SECTION:
+  ANALYZE field usage in PROCEDURE DIVISION
+  
+  CREATE [ProgramName]Request {
+    FOR EACH input field (referenced only):
+      CREATE private [JavaType] [camelCaseFieldName];
+    ADD validation annotations based on PIC clauses
+  }
+  
+  CREATE [ProgramName]Response {
+    FOR EACH output field (modified only):
+      CREATE private [JavaType] [camelCaseFieldName];
+    FOR EACH status field:
+      CREATE private [EnumType] [statusFieldName];
+    ADD success/error helper methods
+  }
+b. Service Class Generation
+CREATE public class [ProgramName]Service {
+  
+  // Working Storage becomes instance fields
+  FOR EACH WS field needing persistence:
+    CREATE private [type] [fieldName];
+  
+  // Main entry point
+  CREATE public [ProgramName]Response process[ProgramName]([ProgramName]Request request) {
+    [ProgramName]Response response = new [ProgramName]Response();
+    TRANSLATE main PROCEDURE DIVISION logic
+    RETURN response;
+  }
+  
+  // Internal paragraphs become private methods
+  FOR EACH paragraph:
+    CREATE private void [paragraphName]([ProgramName]Request request, [ProgramName]Response response) {
+      TRANSLATE paragraph logic
+      MODIFY response object directly for output fields
+    }
+}
+c. Subroutine Method Signature Template
+MAIN METHOD:
+public [ProgramName]Response process[ProgramName]([ProgramName]Request request)
+
+INTERNAL METHODS:
+private void [paragraphName]([ProgramName]Request request, [ProgramName]Response response)
+private [ReturnType] [utilityMethod]([ParameterTypes] params)
+
+CHARACTERISTICS:
+ Single main entry point per subroutine
+ All data exchange via LINKAGE section DTOs
+ Response object modified inplace by internal methods
+ No separate parameter passing beyond request/response
+ Working Storage becomes service instance state
+ Error handling via response status fields
+
