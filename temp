@@ -1,0 +1,552 @@
+// COBOL TO SPRING BOOT MAPPING DOCUMENTATION
+// Complete mapping of COBOL paragraphs and copybooks to Java classes
+
+/*
+ * ============================================================
+ * DOMAIN MODELS - COBOL COPYBOOK MAPPINGS
+ * ============================================================
+ */
+
+// TransmissionData.java
+// Maps to: Linkage Section - transmission-data structure
+// Copybooks: CCPTRDCB, CCPCM1CB, CCPCMSCB, CCPERRCB, CCPMLRCB, CCPINVCB
+// Fields from COBOL:
+//   - TD-APPLICATION-NUM → applicationNumber
+//   - TD-APPLICATION-SUFFIX → applicationSuffix
+//   - TD-MAILER-CUSTOMER-NAME → customerName
+//   - TD-MAILER-CUSTOMER-ID → customerId
+//   - TD-MAILER-ACCOUNT-NUMBER → accountNumber
+//   - TD-CLIENT-NUM → clientNumber
+//   - TD-COUNTRY-CODE → countryCode
+//   - TD-REQUEST-TYPE → requestType
+//   - TD-INSERT-ROUTINE-ID → insertRoutineId
+//   - TD-DELIVERY-CODE → deliveryCode
+//   - TD-DISCLOSURE-GROUP → disclosureGroup
+//   - TD-DATE-ACCOUNT-EXPIRES → accountExpirationDate
+//   - TD-ACCOUNT-TYPE(1-4) → accountTypes[]
+//   - TD-NAME(1-4) → accountNames[]
+//   - TD-CLIENT-DATA → clientData
+//   - TD-BALANCE-DATA → balanceData
+
+// AccountManagement.java
+// Maps to: Linkage Section - amcam00-segment-output
+// Copybook: AMCAM00
+// COBOL Paragraphs: 8600-GET-AM02-INFO, 8700-GET-AM0B-INFO
+// Fields from COBOL:
+//   - AM00-LIMIT-CREDIT → creditLimit
+//   - AM00-CASH-LIMIT → cashLimit
+//   - AM00-CNCY-CODE → currencyCode
+//   - AM00-DATE-ACCOUNT-OPEN → accountOpenDate
+//   - AM00-CLIENT-NUM → clientNumber
+//   - AM00-DISCLOSURE-GRP → disclosureGroup
+//   - AM00-ALTERNATE-DISCLOSURE-GRP → alternateDisclosureGroup
+//   - AM00-ALT-DISCLOSURE-STATUS → disclosureStatus
+//   - AM02-BALANCE-CURRENT → currentBalance
+//   - AM00-MEMBER-NUM → memberNumber
+//   - AM00-MNA-ID → mnaId
+//   - AM02-DATE-NEXT-ANN-FEE → nextAnnualFeeDate
+//   - AMOB-DBT-ACH-PRIMARY-DDA → primaryDdaNumber
+
+// CustomerCommunication.java
+// Maps to: Linkage Section - cuccm00-segment-output
+// Copybooks: CUCCM00, CUCCM01
+// Fields from COBOL:
+//   - Customer address segment data
+//   - CADDR-COUNTRY → country
+//   - CADDR-CITY → city
+//   - Customer communication preferences
+
+// MailerInformation.java
+// Maps to: Linkage Section - card-mailer-information
+// COBOL Paragraphs: 8200-SELECT-ENVELOPE-FORMS
+// Fields from COBOL:
+//   - CARDM-PRI-ENV-FORM → primaryEnvelopeForm
+//   - CARDM-ALT-ENV-FORM → alternateEnvelopeForm
+//   - CARDM-CM-FORM-ID → campaignFormId
+//   - MAILM-LANG-CODE → languageCode
+//   - CMS-READ-COUNT → readCount
+//   - CMS-UPDATE-COUNT → updateCount
+
+// InventoryRecord.java
+// Maps to: Linkage Section - ts2-inventory-record
+// Copybook: CCPINVCB
+// COBOL Paragraph: 4000-UPDATE-INVENTORY-REC, 7000-WRITE-INV-REC
+// Fields from COBOL:
+//   - TS2-INV-DISCLOSURE-FORM → disclosureForm
+//   - TS2-INV-ALT-DISC-FORM → alternateDisclosureForm
+//   - TS2-INV-ALT-ADDENDUM-1 → altAddendum1
+//   - TS2-INV-ADDENDUM-1 → addendum1
+//   - TS2-INV-ADDENDUM-2 → addendum2
+//   - TS2-INV-ADDENDUM-3 → addendum3
+//   - TS2-INV-ADDENDUM-4 → addendum4
+//   - CMLR-CM-CPS-LINE → cpsLine
+
+/*
+ * ============================================================
+ * VALUE OBJECTS - COBOL WORKING STORAGE MAPPINGS
+ * ============================================================
+ */
+
+// AprRates.java
+// Maps to: COBOL Working Storage APR fields
+// Copybook: CCPAPRCB
+// COBOL Paragraphs: Text IDs 013, 014, 042, 052, 053 processing
+// Fields from COBOL:
+//   - APR-PERCENT-RATE → percentRate
+//   - APR-PERIODIC-RATE → periodicRate
+//   - APR-GROUP → group
+//   - APR-SPREAD → spread
+//   - APR-APPLICATION-NUM → applicationNumber
+//   - APR-APPLICATION-SUFFIX → applicationSuffix
+//   - APR-CLIENT-DATA → clientData
+//   - APR-DISCLOSURE-GROUP → disclosureGroup
+//   - APR-BALANCE-DATA → balanceData
+//   - APR-VARIABLE-CODE → variableCode
+//   - APR-CLIENT-NUM → clientNumber
+//   - APR-DISCLOSURE-GRP-STATUS → disclosureGroupStatus
+//   - APR-ALT-DISCLOSURE-GRP → alternateDisclosureGroup
+//   - APR-BALANCE-CURRENT → balanceCurrent
+
+// FormattedText.java
+// Maps to: COBOL Working Storage WS-EXPANDED-TEXT
+// COBOL Paragraphs: 1130-EVAL-MSG-TEXT, 1135-EVAL-TEXT-ID-NUM
+// Fields from COBOL:
+//   - WS-EXPANDED-TEXT → expandedText
+//   - WS-TEXT-ID → textId
+//   - Position tracking (R variable) → currentPosition
+
+// ProcessingContext.java
+// Maps to: Linkage Section - cms-common-fields, cms-production-passing-area
+// Fields from COBOL:
+//   - CMS-SUCCESSFUL-RETURN → successful
+//   - CMS-DB2-SQLSTATE → sqlState
+//   - CMS-CURRENT-DB2-DATE → currentDate
+//   - CMS-READ-COUNT → readCount
+//   - CMS-UPDATE-COUNT → updateCount
+//   - CMS-CHECKPOINT-STATUS → checkpointStatus
+//   - CMS-PARAGRAPH-NAME → paragraphName
+//   - CMS-RETURN-CODE → returnCode
+
+/*
+ * ============================================================
+ * REPOSITORIES - DATABASE ACCESS MAPPINGS
+ * ============================================================
+ */
+
+// ClientRepository.java
+// Maps to: COBOL Paragraph 8800-GET-CLIENT-CODE
+// SQL: SELECT CLIENT_RES_CNTRYCD FROM TCH_CLIENT_NAME 
+//      WHERE CLIENT_NBR = ?
+// Methods needed:
+//   - findCountryCodeByClientNumber(String clientNumber)
+
+// MailerMessageRepository.java
+// Maps to: COBOL Paragraphs 8300-ACCESS-MAILER-MSGS, 8310-FETCH-MAILM-MSGS
+// SQL: SELECT MAILM_MSG_SEQ_NUM, MAILM_MSG_TYPE, MAILM_MSG_NUM,
+//             MAILM_LANG_CODE, MAILM_MSG_TEXT
+//      FROM MAILER_MESSAGES_TABLE
+//      WHERE CLIENT_ID = ? AND MAILER_ID = ?
+//      ORDER BY MAILM_MSG_SEQ_NUM
+// Methods needed:
+//   - findMessagesByClientAndMailerId(String clientId, String mailerId)
+//   - findMessagesCursor(String clientId, String mailerId, String languageCode)
+
+// EnvelopeFormRepository.java
+// Maps to: COBOL Paragraph 8200-SELECT-ENVELOPE-FORMS
+// SQL: SELECT CARDM_PRI_ENV_FORM, CARDM_ALT_ENV_FORM, CARDM_CM_FORM_ID
+//      FROM TCH_CARD_MLR_OPTS
+//      WHERE CARDM_CLIENT_ID = ? AND CARDM_CM_ID = ?
+// Methods needed:
+//   - findEnvelopeFormsByClientAndMailer(String clientId, String mailerId)
+
+// CashLimitRepository.java
+// Maps to: COBOL Paragraph 8920-READ-CASHLIM
+// Used for cash limit percentage lookup
+// Methods needed:
+//   - findCashPercentageByMonthRange(int fromMonth, int toMonth)
+
+/*
+ * ============================================================
+ * SERVICES - COBOL PARAGRAPH MAPPINGS
+ * ============================================================
+ */
+
+// MailerProcessingService.java
+// Maps to: COBOL Paragraph 0000-MAINLINE-CONTROL
+// Orchestrates entire mailer processing flow
+// COBOL Paragraphs implemented:
+//   - 0000-MAINLINE-CONTROL (main orchestration)
+//   - 1000-INITIALIZE-WORKAREA (initialization)
+//   - 1100-ACCESS-DB2-TABLES (database gathering)
+//   - 2000-POPULATE-REMAINDER (data mapping)
+//   - 4000-UPDATE-INVENTORY-REC (final assembly)
+// Methods needed:
+//   - processMailer(TransmissionData transmissionData, AccountManagement accountMgmt)
+//   - initializeWorkArea()
+//   - accessDatabaseTables(String clientNumber, String mailerId)
+//   - populateRemainder(TransmissionData td, InventoryRecord invRecord)
+//   - updateInventoryRecord(InventoryRecord record)
+
+// TextSubstitutionService.java
+// Maps to: COBOL Paragraph 1135-EVAL-TEXT-ID-NUM (Core text processing engine)
+// This is the HEART of the mailer system
+// COBOL Paragraphs implemented:
+//   - 1135-EVAL-TEXT-ID-NUM (main text substitution logic)
+//   - 1130-EVAL-MSG-TEXT (character-level parsing)
+//   - 1121-GET-CURSOR-INFO (cursor management)
+//   - 1120-PROCESS-AREA-MSGS (message area processing)
+// Text ID Handlers (all part of 1135-EVAL-TEXT-ID-NUM):
+//   - substituteTextId001() → Customer name (36 chars)
+//   - substituteTextId002() → Account type name (36 chars)
+//   - substituteTextId003() → Customer name (36 chars)
+//   - substituteTextId004() → Formatted account number (19 chars)
+//   - substituteTextId005() → Formatted account number (19 chars)
+//   - substituteTextId006() → Expiration date (10 chars)
+//   - substituteTextId008() → Credit limit (variable)
+//   - substituteTextId009() → Member number (variable)
+//   - substituteTextId010() → Annual fee date (10 chars)
+//   - substituteTextId013() → Purchase APR annual (7 chars)
+//   - substituteTextId014() → Purchase APR periodic (9 chars)
+//   - substituteTextId015() → Cash limit (variable)
+//   - substituteTextId016() → DDA last 4 digits (4 chars)
+//   - substituteTextId017to025() → UK cash tier processing (5,7,25 chars)
+//   - substituteTextId026to031() → UK purchase tier processing (5,7,25 chars)
+//   - substituteTextId042() → Alt annual APR (7 chars)
+//   - substituteTextId052() → Cash advance APR annual (7 chars)
+//   - substituteTextId053() → Cash advance APR periodic (9 chars)
+// Methods needed:
+//   - substituteVariables(String messageText, ProcessingContext context)
+//   - parseMessageText(String text)
+//   - detectTextIdPattern(String text, int position)
+
+// FinancialFormattingService.java
+// Maps to: COBOL Formatting Paragraphs
+// COBOL Paragraphs implemented:
+//   - 1136-FORMAT-CREDIT (credit limit formatting)
+//   - 1137-CASH-FORMAT (cash limit formatting)
+//   - 1137-FEE-FORMAT (annual fee formatting)
+//   - 1137-LEFT-JUSTIFY (text justification)
+// External Service Calls:
+//   - GCSXS120 (currency formatting) → formatCurrency()
+// Methods needed:
+//   - formatCreditLimit(BigDecimal amount, String currency)
+//   - formatCashLimit(BigDecimal amount, String currency)
+//   - formatAnnualFee(BigDecimal amount, String currency)
+//   - leftJustifyAmount(String formattedAmount)
+//   - positionCurrencySymbol(String amount, String symbol)
+
+// AprCalculationService.java
+// Maps to: APR calculation logic in text ID processing
+// External Service: CCPBS640
+// COBOL Paragraphs: Text IDs 013, 014, 042, 052, 053 processing sections
+// Methods needed:
+//   - calculatePurchaseApr(AprRates aprData) → for text IDs 013, 014
+//   - calculateCashAdvanceApr(AprRates aprData) → for text IDs 042, 052, 053
+//   - getAnnualRate(AprRates data)
+//   - getPeriodicRate(AprRates data)
+
+// MessageProcessingService.java
+// Maps to: Message retrieval and assembly paragraphs
+// COBOL Paragraphs implemented:
+//   - 8300-ACCESS-MAILER-MSGS (cursor opening)
+//   - 8310-FETCH-MAILM-MSGS (message fetching)
+//   - 8320-CLOSE-MSG-CURSOR (cursor cleanup)
+//   - 8330-CHANGE-LANG-CODE (language fallback)
+//   - 1110-STRING-AREA6-STATE-LINE (address formatting)
+//   - 1140-EVAL-MSG-SEQ-NUM (sequence processing)
+// Methods needed:
+//   - openMessageCursor(String clientId, String mailerId, String language)
+//   - fetchMessages(String messageType)
+//   - closeMessageCursor()
+//   - handleLanguageFallback(String preferredLanguage)
+//   - formatAddressLine(CustomerAddress address)
+//   - processMessageSequence(List<Message> messages)
+
+// CashLimitCalculationService.java
+// Maps to: Cash limit calculation paragraphs
+// COBOL Paragraphs implemented:
+//   - 8900-GET-CASHLIM (calculation orchestration)
+//   - 8910-CALC-MONTHS (account age calculation)
+//   - 8920-READ-CASHLIM (percentage lookup)
+//   - 8930-READ-AMT (fallback processing)
+// External Service: GCSXS050 (date conversion)
+// Methods needed:
+//   - calculateCashLimit(LocalDate accountOpenDate, BigDecimal creditLimit)
+//   - calculateAccountAgeInMonths(LocalDate openDate, LocalDate currentDate)
+//   - lookupCashPercentage(int monthsElapsed)
+//   - applyFallbackCalculation(BigDecimal creditLimit)
+
+// DatabaseAccessService.java
+// Maps to: IMS and DB2 database access paragraphs
+// COBOL Paragraphs implemented:
+//   - 8600-GET-AM02-INFO (AM02 segment retrieval)
+//   - 8700-GET-AM0B-INFO (AM0B segment retrieval)
+//   - 8800-GET-CLIENT-CODE (client country code)
+//   - 8200-SELECT-ENVELOPE-FORMS (mailer configuration)
+//   - 1000-SET-DB2-HANDLES (database initialization)
+// IMS DL/I Operations:
+//   - GU (Get Unique) calls for segment retrieval
+// Methods needed:
+//   - getAm02Segment(String clientNum, String appNum, String appSuffix)
+//   - getAm0bSegment(String clientNum, String appNum, String appSuffix)
+//   - getClientCountryCode(String clientNumber)
+//   - getEnvelopeForms(String clientId, String mailerId)
+//   - initializeDatabaseHandles()
+
+/*
+ * ============================================================
+ * UTILITIES - COBOL HELPER PARAGRAPH MAPPINGS
+ * ============================================================
+ */
+
+// DateCalculationUtil.java
+// Maps to: Date processing logic
+// External Service: GCSXS050 (date conversion)
+// COBOL Paragraphs: 8910-CALC-MONTHS, Text ID 006 processing
+// Methods needed:
+//   - calculateMonthDifference(LocalDate start, LocalDate end)
+//   - formatDateForDisplay(LocalDate date, String format)
+//   - parseCobolDate(String cobolDate)
+//   - handleSpecialDateValue(String dateValue) → for 9999999 case
+
+// TextFormattingUtil.java
+// Maps to: Text manipulation logic
+// External Service: CCPBS015 (account number formatting)
+// COBOL Paragraphs: Text ID 004, 005, 009 processing
+// Methods needed:
+//   - formatAccountNumber(String accountNumber, String pattern)
+//   - extractLastNDigits(String number, int n)
+//   - findFirstNonSpacePosition(String text)
+//   - calculateContentLength(String text)
+
+// ErrorHandlingUtil.java
+// Maps to: COBOL Paragraph 9100-ERROR-ROUTINE
+// COBOL Error Management:
+//   - CMS-PARAGRAPH-NAME tracking
+//   - CMS-DB2-SQLSTATE logging
+//   - Error flag management
+// Methods needed:
+//   - logError(String paragraphName, String errorMessage, ProcessingContext context)
+//   - handleDatabaseError(String sqlState, String operation)
+//   - handleServiceError(String serviceName, String returnCode)
+//   - buildErrorContext(TransmissionData data, String paragraphName)
+
+/*
+ * ============================================================
+ * CONTROLLER - COBOL ENTRY POINT MAPPING
+ * ============================================================
+ */
+
+// MailerProcessingController.java
+// Maps to: COBOL PROCEDURE DIVISION USING (entry point)
+// Receives request equivalent to linkage section parameters
+// Endpoints needed:
+//   - POST /api/mailer/process → Main processing entry point
+//   - GET /api/mailer/status/{id} → Check processing status
+//   - POST /api/mailer/validate → Validate input data
+// Request body maps to 13 COBOL parameters combined
+
+/*
+ * ============================================================
+ * TEST CLASSES - COBOL PARAGRAPH COVERAGE
+ * ============================================================
+ */
+
+// MailerProcessingServiceTest.java
+// Tests for: 0000-MAINLINE-CONTROL flow
+// Test scenarios:
+//   - Complete successful processing flow
+//   - Initialization failure handling
+//   - Database access failures
+//   - Final assembly and output
+
+// TextSubstitutionServiceTest.java
+// Tests for: 1135-EVAL-TEXT-ID-NUM (all text IDs 001-053)
+// Test scenarios for EACH text ID:
+//   - Text ID 001: Customer name substitution
+//   - Text ID 002: Account type selection logic
+//   - Text ID 004/005: Account number formatting with pattern
+//   - Text ID 006: Date formatting with 9999999 special case
+//   - Text ID 008: Currency-specific credit limit formatting
+//   - Text ID 009: Member number validation and formatting
+//   - Text ID 015: Cash limit with variable length
+//   - Text ID 016: DDA last 4 digits extraction
+//   - Text IDs 017-035: UK tier processing validation
+//   - Text IDs 013,014,042,052,053: APR calculation integration
+
+// FinancialFormattingServiceTest.java
+// Tests for: 1136-FORMAT-CREDIT, 1137-* paragraphs
+// Test scenarios:
+//   - Credit limits <= $999,999 (with thousands separator)
+//   - Credit limits $999,999 - $9,999,999 (no separator)
+//   - Credit limits > $9,999,999 (number format)
+//   - Currency symbol positioning logic
+//   - USD vs CAD vs other currency handling
+//   - Left justification with all-space handling
+
+// AprCalculationServiceTest.java
+// Tests for: APR service integration (CCPBS640)
+// Test scenarios:
+//   - Purchase APR calculation (P01 variable code)
+//   - Cash advance APR calculation (C01 variable code)
+//   - Annual vs periodic rate outputs
+//   - Error handling for invalid data
+
+// CashLimitCalculationServiceTest.java
+// Tests for: 8900-GET-CASHLIM, 8910-CALC-MONTHS, 8920-READ-CASHLIM
+// Test scenarios:
+//   - Month calculation accuracy
+//   - Cash percentage lookup by month range
+//   - Fallback calculation when form not found
+//   - Edge cases: new accounts, very old accounts
+
+// DateCalculationUtilTest.java
+// Tests for: Date conversion logic (GCSXS050 equivalent)
+// Test scenarios:
+//   - Month difference calculations
+//   - COBOL date format conversions
+//   - Special date value handling (9999999)
+//   - Leap year considerations
+
+// TextFormattingUtilTest.java
+// Tests for: Account number formatting (CCPBS015 equivalent)
+// Test scenarios:
+//   - Pattern-based formatting (9999 9999 9999 9999)
+//   - Last N digits extraction
+//   - Non-space position detection
+//   - Content length calculation
+
+// ClientRepositoryTest.java
+// Tests for: 8800-GET-CLIENT-CODE database access
+// Test scenarios:
+//   - Successful country code retrieval
+//   - Client not found handling
+//   - Database connection failures
+
+// MailerMessageRepositoryTest.java
+// Tests for: 8300-ACCESS-MAILER-MSGS, 8310-FETCH-MAILM-MSGS
+// Test scenarios:
+//   - Cursor-based message retrieval
+//   - Message ordering by sequence number
+//   - Language-specific message filtering
+//   - End-of-table detection
+
+// MailerProcessingIntegrationTest.java
+// Full end-to-end test covering:
+//   - Complete flow from 0000-MAINLINE-CONTROL through 7000-WRITE-INV-REC
+//   - All 5 processing phases
+//   - Database operations (both IMS and DB2 equivalents)
+//   - Text substitution for multiple text IDs
+//   - Error scenarios and recovery
+
+/*
+ * ============================================================
+ * CONFIGURATION CLASSES
+ * ============================================================
+ */
+
+// DatabaseConfig.java
+// Maps to: COBOL database initialization
+// COBOL Paragraphs: 1000-SET-DB2-HANDLES
+// Configures:
+//   - Primary datasource (equivalent to DBDAM01-PCB-NUM1)
+//   - Secondary datasource (equivalent to DBDCU01-PCB-NUM1)
+//   - Transaction management
+//   - Connection pooling
+
+// ServiceConfig.java
+// Maps to: External service configuration
+// External Services:
+//   - CCPBS015 (account formatting) → REST client or internal service
+//   - CCPBS640 (APR calculations) → REST client or internal service
+//   - GCSXS050 (date conversion) → utility bean
+//   - GCSXS120 (currency formatting) → utility bean
+//   - FPRXAPRC (UK APR service) → REST client or internal service
+
+/*
+ * ============================================================
+ * ADDITIONAL NOTES
+ * ============================================================
+ * 
+ * Working Storage Areas in COBOL map to:
+ *   - WS-EXPANDED-TEXT → StringBuilder in TextSubstitutionService
+ *   - WS-AREA-MESSAGES → Map<String, String> in MessageProcessingService
+ *   - WS-CREDIT-LIMIT-MASK → Intermediate variables in FinancialFormattingService
+ *   - WS-CURRENT-DB2-DATE → LocalDateTime in ProcessingContext
+ * 
+ * COBOL Flags/Switches map to:
+ *   - CMS-SUCCESSFUL-RETURN → boolean in ProcessingContext
+ *   - WS-FETCH-SW → boolean in message cursor management
+ *   - WK-EOT → boolean end-of-table indicator
+ *   - Various error flags → enum ProcessingStatus
+ * 
+ * COBOL Perform statements map to:
+ *   - PERFORM ... THRU ... → method calls with clear start/end
+ *   - PERFORM VARYING → Java for/while loops with counters
+ *   - PERFORM UNTIL → while loops with conditions
+ */
+
+
+* Directory Structure:
+ * 
+ * src/main/java/com/creditcard/mailer/
+ * ├── MailerProcessingApplication.java
+ * ├── config/
+ * │   ├── DatabaseConfig.java
+ * │   └── ServiceConfig.java
+ * ├── domain/
+ * │   ├── model/
+ * │   │   ├── TransmissionData.java
+ * │   │   ├── AccountManagement.java
+ * │   │   ├── CustomerCommunication.java
+ * │   │   ├── MailerInformation.java
+ * │   │   └── InventoryRecord.java
+ * │   ├── enums/
+ * │   │   ├── TextIdType.java
+ * │   │   ├── CurrencyCode.java
+ * │   │   └── MessageType.java
+ * │   └── valueobjects/
+ * │       ├── AprRates.java
+ * │       ├── FormattedText.java
+ * │       └── ProcessingContext.java
+ * ├── repository/
+ * │   ├── ClientRepository.java
+ * │   ├── MailerMessageRepository.java
+ * │   ├── EnvelopeFormRepository.java
+ * │   └── CashLimitRepository.java
+ * ├── service/
+ * │   ├── MailerProcessingService.java
+ * │   ├── TextSubstitutionService.java
+ * │   ├── FinancialFormattingService.java
+ * │   ├── AprCalculationService.java
+ * │   ├── MessageProcessingService.java
+ * │   ├── CashLimitCalculationService.java
+ * │   └── DatabaseAccessService.java
+ * ├── controller/
+ * │   └── MailerProcessingController.java
+ * └── util/
+ *     ├── DateCalculationUtil.java
+ *     ├── TextFormattingUtil.java
+ *     └── ErrorHandlingUtil.java
+ * 
+ * src/main/resources/
+ * ├── application.yml
+ * └── db/
+ *     └── schema.sql
+ * 
+ * src/test/java/com/creditcard/mailer/
+ * ├── service/
+ * │   ├── MailerProcessingServiceTest.java
+ * │   ├── TextSubstitutionServiceTest.java
+ * │   ├── FinancialFormattingServiceTest.java
+ * │   ├── AprCalculationServiceTest.java
+ * │   └── CashLimitCalculationServiceTest.java
+ * ├── repository/
+ * │   ├── ClientRepositoryTest.java
+ * │   └── MailerMessageRepositoryTest.java
+ * ├── integration/
+ * │   └── MailerProcessingIntegrationTest.java
+ * └── util/
+ *     ├── DateCalculationUtilTest.java
+ *     └── TextFormattingUtilTest.java
+ */
